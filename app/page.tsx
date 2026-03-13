@@ -40,7 +40,13 @@ export default function page() {
   };
 
   const handleAddTodo = ()=> {
-    
+    if(!newTodo || !user) return
+
+    try {
+    con
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   if (!user)
