@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "lib/db.js", "lib/api.js", "config/firebase.js", "app/api/todos/routes.js"  ],
   "exclude": ["node_modules"]
 }
