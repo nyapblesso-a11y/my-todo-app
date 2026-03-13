@@ -2,7 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Optional: global body styling */
 body {
   font-family: sans-serif;
   background-color: #f3f4f6;
+  margin: 0;
+  padding: 0;
 }

@@ -14,3 +14,5 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const githubProvider = new GithubAuthProvider();
+
+console.log("✅ Firebase initialized:", app.options.projectId);
