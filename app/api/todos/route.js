@@ -5,7 +5,6 @@ export async function GET() {
   return new Response(JSON.stringify(todos.rows), { status: 200 });
 }
 
-
 export async function POST(req) {
   const { title, user_id } = await req.json();
   const newTodo = await pool.query(
