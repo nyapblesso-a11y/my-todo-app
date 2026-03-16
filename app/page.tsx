@@ -11,7 +11,6 @@ import {
   User,
 } from "firebase/auth";
 import { addTodo, getTodos, deleteTodo, toggleTodo } from "@/lib/api";
-import { error } from "console";
 
 interface Todo {
   id: number;
@@ -23,7 +22,7 @@ interface Todo {
 export default function page() {
   const [user, setUser] = useState<User | null>(null);
   const [newTodo, setNewTodo] = useState("");
-  const [todo, setTodo] = useState<Todo[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
 
   useEffect(() => {
     onAuthStateChanged(auth, (currentUser) => setUser(currentUser));
@@ -33,19 +32,37 @@ export default function page() {
   const fetchTodos = async () => {
     try {
       const data = await getTodos();
-      setTodo(data);
+      setTodos(data);
     } catch (err) {
       console.error("Error:", err);
     }
   };
-
-  const handleAddTodo = ()=> {
-    if(!newTodo || !user) return
-
+const handleAddTodo = async () => {
+    if (!newTodo || !user) return;
     try {
-    con
+      const todo = await addTodo(newTodo, user.uid);
+      setTodos([...todos, todo]);
+      setNewTodo("");
     } catch (err) {
-      console.error(err)
+      console.error(err);
+    }
+  };
+
+  const handleToggle = async (id: number, completed: boolean) => {
+    try {
+      const updated = await toggleTodo(id, completed);
+      setTodos(todos.map((t) => (t.id === updated.id ? updated : t)));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      const remaining = await deleteTodo(id);
+      setTodos(remaining);
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -76,7 +93,57 @@ export default function page() {
         </div>
       </div>
     );
-  return <div>
- 
-  </div>;
+
+  return( 
+  <>
+  <div className="max-w-md mx-auto mt-10">
+      <h1 className="text-xl font-bold mb-4">Hello, {user.displayName}</h1>
+      <button
+        onClick={() => signOut(auth)}
+        className="bg-red-500 text-white px-4 py-2 rounded mb-4"
+      >
+        Logout
+      </button>
+
+      <div className="flex mb-4 gap-2">
+        <input
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
+          className="border px-2 py-1 flex-1 rounded"
+          placeholder="Add a todo"
+        />
+        <button
+          onClick={handleAddTodo}
+          className="bg-green-500 text-white px-4 py-1 rounded"
+        >
+          Add
+        </button>
+      </div>
+
+      <ul>
+        {todos.map((todo) => (
+          <li
+            key={todo.id}
+            className={`flex justify-between items-center mb-2 p-2 border rounded ${
+              todo.completed ? "line-through text-gray-400" : ""
+            }`}
+          >
+            <span
+              onClick={() => handleToggle(todo.id, todo.completed)}
+              className="cursor-pointer"
+            >
+              {todo.title}
+            </span>
+            <button
+              onClick={() => handleDelete(todo.id)}
+              className="bg-red-500 text-white px-2 py-1 rounded"
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </>
+  )
 }
