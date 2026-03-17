@@ -1,7 +1,10 @@
 import pool from "@/lib/db";
 
-export async function GET() {
-  const todos = await pool.query("SELECT * FROM todos ORDER BY id ASC");
+export async function GET(req) {
+  const {searchParams} = new URL(req.url)
+  const user_id = searchParams.get("user_id")
+
+  const todos = await pool.query("SELECT * FROM todos WHERE user_id=$1 ORDER BY id ASC", [user_id]);
   return new Response(JSON.stringify(todos.rows), { status: 200 });
 }
 

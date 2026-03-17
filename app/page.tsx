@@ -24,20 +24,27 @@ export default function page() {
   const [newTodo, setNewTodo] = useState("");
   const [todos, setTodos] = useState<Todo[]>([]);
 
-  useEffect(() => {
-    onAuthStateChanged(auth, (currentUser) => setUser(currentUser));
-    fetchTodos();
-  }, []);
+useEffect(() => {
+  onAuthStateChanged(auth, (currentUser) => {
+    setUser(currentUser);
 
-  const fetchTodos = async () => {
+    if (currentUser) {
+      fetchTodos(currentUser.uid);
+    } else {
+      setTodos([]);
+    }
+  });
+}, []);
+
+  const fetchTodos = async (uid: string) => {
     try {
-      const data = await getTodos();
+      const data = await getTodos(uid);
       setTodos(data);
     } catch (err) {
       console.error("Error:", err);
     }
   };
-const handleAddTodo = async () => {
+  const handleAddTodo = async () => {
     if (!newTodo || !user) return;
     try {
       const todo = await addTodo(newTodo, user.uid);
@@ -64,7 +71,7 @@ const handleAddTodo = async () => {
     } catch (err) {
       console.error(err);
     }
-  }
+  };
 
   if (!user)
     return (
@@ -94,56 +101,62 @@ const handleAddTodo = async () => {
       </div>
     );
 
-  return( 
-  <>
-  <div className="max-w-md mx-auto mt-10">
-      <h1 className="text-xl font-bold mb-4">Hello, {user.displayName}</h1>
-      <button
-        onClick={() => signOut(auth)}
-        className="bg-red-500 text-white px-4 py-2 rounded mb-4"
-      >
-        Logout
-      </button>
-
-      <div className="flex mb-4 gap-2">
-        <input
-          value={newTodo}
-          onChange={(e) => setNewTodo(e.target.value)}
-          className="border px-2 py-1 flex-1 rounded"
-          placeholder="Add a todo"
-        />
+  return (
+    <>
+      <div className="max-w-md mx-auto mt-10">
+        <h1 className="text-xl font-bold mb-4">Hello, {user.displayName}</h1>
         <button
-          onClick={handleAddTodo}
-          className="bg-green-500 text-white px-4 py-1 rounded"
+          onClick={() => signOut(auth)}
+          className="bg-red-500 text-white px-4 py-2 rounded mb-4"
         >
-          Add
+          Logout
         </button>
-      </div>
 
-      <ul>
-        {todos.map((todo) => (
-          <li
-            key={todo.id}
-            className={`flex justify-between items-center mb-2 p-2 border rounded ${
-              todo.completed ? "line-through text-gray-400" : ""
-            }`}
+        <div className="flex mb-4 gap-2">
+          <input
+            value={newTodo}
+            onChange={(e) => setNewTodo(e.target.value)}
+            className="border px-2 py-1 flex-1 rounded"
+            placeholder="Add a todo"
+          />
+          <button
+            onClick={handleAddTodo}
+            className="bg-green-500 text-white px-4 py-1 rounded"
           >
-            <span
-              onClick={() => handleToggle(todo.id, todo.completed)}
-              className="cursor-pointer"
+            Add
+          </button>
+        </div>
+
+        <ul>
+          {todos.map((todo) => (
+            <li
+              key={todo.id}
+              className={`flex justify-between items-center mb-2 p-2 border rounded ${
+                todo.completed ? "line-through text-gray-400" : ""
+              }`}
             >
-              {todo.title}
-            </span>
-            <button
-              onClick={() => handleDelete(todo.id)}
-              className="bg-red-500 text-white px-2 py-1 rounded"
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  </>
-  )
+              <span
+                onClick={() => handleToggle(todo.id, todo.completed)}
+                className="cursor-pointer"
+              >
+                {todo.title}
+              </span>
+
+              <button
+                onClick={() => handleDelete(todo.id)}
+                disabled={todo.completed}
+                className={`px-3 py-1 rounded text-white ${
+                  todo.completed
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-500 hover:bg-red-600"
+                }`}
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
+  );
 }
